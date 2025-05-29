@@ -1,0 +1,162 @@
+{
+  "vertexLabels": [
+    {
+      "name": "airport"
+    },
+    {
+      "name": "country"
+    },
+    {
+      "name": "continent"
+    }
+  ],
+  "edgeLabels": [
+    {
+      "name": "route",
+      "directed": true,
+      "multiplicity": "MULTI"
+    },
+    {
+      "name": "contains",
+      "directed": true,
+      "multiplicity": "MULTI"
+    }
+  ],
+  "propertyKeys": [
+    {
+      "name": "city",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "lat",
+      "dataType": "Double",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "lon",
+      "dataType": "Double",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "dist",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "identity",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "type",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "code",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "icao",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "desc",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "region",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "runways",
+      "dataType": "Integer",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "longest",
+      "dataType": "Integer",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "elev",
+      "dataType": "Integer",
+      "cardinality": "SINGLE"
+    },
+    {
+      "name": "country",
+      "dataType": "String",
+      "cardinality": "SINGLE"
+    }
+  ],
+  "graphIndices": {
+    "compositeIndices": [
+      {
+        "indexName": "Idx_comidx_Vertex_identity_unique",
+        "elementType": "vertex",
+        "propertyKeys": [
+          "identity"
+        ],
+        "unique": true
+      },
+      {
+        "indexName": "Idx_comidx_Vertex_type_airport",
+        "elementType": "vertex",
+        "propertyKeys": [
+          "type"
+        ],
+        "indexOnly": "airport",
+        "unique": false
+      },
+      {
+        "indexName": "Idx_comidx_Vertex_code",
+        "elementType": "vertex",
+        "propertyKeys": [
+          "code"
+        ],
+        "unique": false
+      },
+      {
+        "indexName": "Idx_comidx_Vertex_icao",
+        "elementType": "vertex",
+        "propertyKeys": [
+          "icao"
+        ],
+        "unique": false
+      },
+      {
+        "indexName": "Idx_comidx_Vertex_country",
+        "elementType": "vertex",
+        "propertyKeys": [
+          "country"
+        ],
+        "unique": false
+      },
+      {
+        "indexName": "Idx_comidx_Vertex_city",
+        "elementType": "vertex",
+        "propertyKeys": [
+          "city"
+        ],
+        "unique": false
+      },
+      {
+        "indexName": "Idx_comidx_Edge_identity",
+        "elementType": "edge",
+        "propertyKeys": [
+          "identity"
+        ],
+        "unique": false
+      }
+    ],
+    "mixedIndices": [
+    ]
+  },
+  "vertexCentricIndices": [
+  ]
+}
