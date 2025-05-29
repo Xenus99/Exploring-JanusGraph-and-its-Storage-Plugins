@@ -1,1 +1,1 @@
-# Exploring-JanusGraph-and-its-Storage-Plugins
+# Sample Graph App
