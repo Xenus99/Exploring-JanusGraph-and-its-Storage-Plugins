@@ -1,4 +1,4 @@
-~id,~label,type,code,icao,desc,region,runways,longest,elev,country,city,lat,lon
+id,label,type,code,icao,desc,region,runways,longest,elev,country,city,lat,lon
 1,airport,airport,ATL,KATL,Hartsfield - Jackson Atlanta International Airport,US-GA,5,12390,1026,US,Atlanta,33.63669968,-84.42810059
 2,airport,airport,ANC,PANC,Anchorage Ted Stevens,US-AK,3,12400,151,US,Anchorage,61.17440033,-149.9960022
 3,airport,airport,AUS,KAUS,Austin Bergstrom International Airport,US-TX,2,12250,542,US,Austin,30.19449997,-97.66989899

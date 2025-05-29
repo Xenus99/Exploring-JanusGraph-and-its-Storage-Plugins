@@ -6,6 +6,9 @@ import org.janusgraph.core.schema.JanusGraphManagement;
 import org.apache.tinkerpop.gremlin.structure.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+//import org.apache.tinkerpop.gremlin.process.traversal.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+
 
 
 import java.io.*;
@@ -15,12 +18,74 @@ import java.util.Map;
 public class App {
 
     public static void main(String[] args) {
-        System.out.println("Starting JanusGraph In-Memory Example...");
-        JanusGraph graph = JanusGraphFactory.build().set("storage.backend", "inmemory").open();
+
+//        System.out.println("Using In-Memory backend...");
+//        JanusGraph graph = JanusGraphFactory.build().set("storage.backend", "inmemory").open();
+
+        System.out.println("Using BerkeleyDB backend...");
+        JanusGraph graph = JanusGraphFactory.build()
+                .set("storage.backend", "berkeleyje")
+                .set("storage.directory", "berkeley-data")
+                .open();
+
         System.out.println("JanusGraph instance created!");
 
+        // Get Timestamp before Initializing Schema and Loading Data
+        long start = System.currentTimeMillis();
+
         initializeSchema(graph);
+
+//        JanusGraphManagement mgmtCheck = graph.openManagement();
+//
+//        System.out.println("\n--- Vertex Labels ---");
+//        mgmtCheck.getVertexLabels().forEach(label ->
+//                System.out.println("Vertex Label: " + label.name()));
+//
+//        System.out.println("\n--- Edge Labels ---");
+//        mgmtCheck.getRelationTypes(EdgeLabel.class).forEach(label ->
+//                System.out.println("Edge Label: " + label.name()));
+//
+//        System.out.println("\n--- Property Keys ---");
+//        mgmtCheck.getRelationTypes(PropertyKey.class).forEach(key ->
+//                System.out.println("Property Key: " + key.name() +
+//                        " (dataType=" + key.dataType().getSimpleName() +
+//                        ", cardinality=" + key.cardinality() + ")"));
+//
+//        System.out.println("\n--- Graph Indexes ---");
+//        mgmtCheck.getGraphIndexes(Vertex.class).forEach(index ->
+//                System.out.println("Vertex Index: " + index.name()));
+//        mgmtCheck.getGraphIndexes(Edge.class).forEach(index ->
+//                System.out.println("Edge Index: " + index.name()));
+//
+//        mgmtCheck.rollback(); // Always close management transaction
+
+
         loadData(graph);
+
+        // Get Timestamp after Initializing Schema and Loading Data
+        long end = System.currentTimeMillis();
+
+        GraphTraversalSource g = graph.traversal();
+        long vertexCount = g.V().count().next();
+        long edgeCount = g.E().count().next();
+
+        System.out.println("Total vertices: " + vertexCount);
+        System.out.println("Total edges: " + edgeCount);
+        System.out.println("Time taken to load data (ms): " + (end - start));
+
+//        // 💡 NEW: Print first 5 vertices for debugging
+//        System.out.println("First 5 vertices:");
+//        g.V().limit(5).forEachRemaining(v -> {
+//            System.out.println("Vertex: id=" + v.id() + ", label=" + v.label());
+//            v.properties().forEachRemaining(p -> System.out.println("  " + p.key() + " = " + p.value()));
+//        });
+//
+//        // 💡 NEW: Print first 5 edges for debugging
+//        System.out.println("First 5 edges:");
+//        g.E().limit(5).forEachRemaining(e -> {
+//            System.out.println("Edge: id=" + e.id() + ", label=" + e.label());
+//            e.properties().forEachRemaining(p -> System.out.println("  " + p.key() + " = " + p.value()));
+//        });
 
         graph.close();
         System.out.println("Graph loaded, schema initialized, and JanusGraph instance closed.");
@@ -113,10 +178,11 @@ public class App {
     private static void loadData(JanusGraph graph) {
         System.out.println("Loading data from CSV files...");
 
-        Map<String, Vertex> airports = new HashMap<>();
+        // 💡 Map of id -> vertex ID (Long), NOT the Vertex object
+        Map<String, Object> airportVertexIds = new HashMap<>();
 
         // Load airports
-        try (Reader reader = new FileReader("clean_air-routes-latest-nodes.csv");
+        try (Reader reader = new FileReader("clean_air-routes-nodes.csv");
              CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
 
             JanusGraphTransaction tx = graph.newTransaction();
@@ -130,8 +196,8 @@ public class App {
                 airport.property("desc", record.get("desc"));
                 airport.property("city", record.get("city"));
                 airport.property("country", record.get("country"));
-                airport.property("lat", Double.parseDouble(record.get("lat")));
-                airport.property("lon", Double.parseDouble(record.get("lon")));
+                airport.property("lat", parseDouble(record.get("lat")));
+                airport.property("lon", parseDouble(record.get("lon")));
                 airport.property("type", record.get("type"));
                 airport.property("region", record.get("region"));
                 airport.property("runways", parseInt(record.get("runways")));
@@ -139,7 +205,8 @@ public class App {
                 airport.property("elev", parseInt(record.get("elev")));
                 airport.property("identity", record.get("id"));
 
-                airports.put(record.get("code"), airport);
+                // 💡 Store the vertex ID (Object)
+                airportVertexIds.put(record.get("id"), airport.id());
                 vertexCount++;
             }
             tx.commit();
@@ -149,7 +216,7 @@ public class App {
         }
 
         // Load routes
-        try (Reader reader = new FileReader("clean_air-routes-latest-edges.csv");
+        try (Reader reader = new FileReader("clean_air-routes-edges.csv");
              CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
 
             JanusGraphTransaction tx = graph.newTransaction();
@@ -157,13 +224,18 @@ public class App {
 
             int edgeCount = 0;
             for (CSVRecord record : parser) {
-                Vertex from = airports.get(record.get("src"));
-                Vertex to = airports.get(record.get("dst"));
-                if (from != null && to != null) {
+                // 💡 Re-fetch Vertex objects by ID
+                Object fromId = airportVertexIds.get(record.get("from"));
+                Object toId = airportVertexIds.get(record.get("to"));
+                if (fromId != null && toId != null) {
+                    Vertex from = tx.getVertex(fromId);
+                    Vertex to = tx.getVertex(toId);
                     Edge edge = from.addEdge("route", to);
                     edge.property("dist", record.get("dist"));
                     edge.property("identity", record.get("id"));
                     edgeCount++;
+                } else {
+                    System.out.println("Missing vertex for edge: from=" + record.get("from") + ", to=" + record.get("to"));
                 }
             }
             tx.commit();
@@ -175,11 +247,36 @@ public class App {
         System.out.println("Data loading complete!");
     }
 
+//    private static Integer parseInt(String s) {
+//        try {
+//            return Integer.parseInt(s);
+//        } catch (NumberFormatException e) {
+//            return null;
+//        }
+//    }
+
     private static Integer parseInt(String s) {
         try {
+            if (s == null || s.trim().isEmpty()) {
+                return null;
+            }
             return Integer.parseInt(s);
         } catch (NumberFormatException e) {
             return null;
         }
     }
+
+    private static Double parseDouble(String s) {
+        try {
+            if (s == null || s.trim().isEmpty()) {
+                return null;
+            }
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
 }
+
+

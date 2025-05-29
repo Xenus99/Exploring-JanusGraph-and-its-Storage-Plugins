@@ -26,6 +26,30 @@
       <version>1.0.0-20231021-144322.55d7454</version>
     </dependency>
     <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+
+<!--    <dependency>-->
+<!--      <groupId>org.apache.tinkerpop</groupId>-->
+<!--      <artifactId>gremlin-core</artifactId>-->
+<!--      <version>3.6.4</version>-->
+<!--    </dependency>-->
+    <dependency>
+      <groupId>org.janusgraph</groupId>
+      <artifactId>janusgraph-berkeleyje</artifactId>
+      <version>1.0.0-20231021-144322.55d7454</version>
+    </dependency>
+
+<!--    <dependency>-->
+<!--      <groupId>org.janusgraph</groupId>-->
+<!--      <artifactId>janusgraph-berkeleyje</artifactId>-->
+<!--      <version>1.0.0-20231021-144322.55d7454</version>-->
+<!--      <scope>test</scope>-->
+<!--    </dependency>-->
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
       <version>1.10.0</version>
